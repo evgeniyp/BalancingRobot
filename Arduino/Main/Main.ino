@@ -181,7 +181,7 @@ void setup()
   setup_motors();
 }
 
-float KP = 300, KI = 7, KD = 600;
+float KP = 300, KI = 15, KD = 600;
 float iTerm = 0, pTerm = 0, dTerm = 0;
 float last_pitch = 0;
 
@@ -189,16 +189,32 @@ void loop() //Main Loop
 {
   if (millis() - timer > 20) // Main loop runs at 50Hz
   {
+    counter++;
     timer_old = timer;
-    timer = millis();
-//    G_Dt = (timer > timer_old) ? (timer - timer_old) / 1000.0 : 0;
-
-    Read_Accel();
-    Read_Gyro();
-    Matrix_update();
+    timer=millis();
+    if (timer>timer_old)
+      G_Dt = (timer-timer_old)/1000.0;    // Real time of loop run. We use this on the DCM algorithm (gyro integration time)
+    else
+      G_Dt = 0;
+    
+    // *** DCM algorithm
+    // Data adquisition
+    Read_Gyro();   // This read gyro data
+    Read_Accel();     // Read I2C accelerometer
+    
+    if (counter > 5)  // Read compass data at 10Hz... (5 loop runs)
+      {
+      counter=0;
+      Read_Compass();    // Read I2C magnetometer
+      Compass_Heading(); // Calculate magnetic heading  
+      }
+    
+    // Calculations...
+    Matrix_update(); 
     Normalize();
     Drift_correction();
     Euler_angles();
+    // ***
 
     pTerm = KP * pitch;
     iTerm = KI * pitch + iTerm;
