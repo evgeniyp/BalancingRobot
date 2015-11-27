@@ -1,5 +1,6 @@
 ﻿using UnityEngine;
 using System.Collections;
+using UnityEngine.UI;
 
 public class WheelScript : MonoBehaviour
 {
@@ -10,8 +11,16 @@ public class WheelScript : MonoBehaviour
     private Rigidbody _thisRb;
     private HingeJoint _thisHj;
 
+    public GameObject pSlider;
+
     private Vector3 _startPosition;
     private Quaternion _startRotation;
+
+    float pTerm, iTerm, dTerm;
+    public float KP = 1000, KI = 100, KD = 2500;
+
+    private float pitch;
+    private float last_pitch;
 
     private void Start()
     {
@@ -20,18 +29,15 @@ public class WheelScript : MonoBehaviour
         _stickRb = _thisHj.connectedBody;
         _startPosition = transform.position;
         _startRotation = transform.rotation;
+
+        pSlider.GetComponent<Slider>().value = KP;
     }
 
     private void FixedUpdate()
     {
         float inputValue = Input.GetAxis("Horizontal");
-
-        _thisHj.axis = inputValue < 0 ? AXIS_Y_ : AXIS_Y;
-        JointMotor motor = _thisHj.motor;
-        motor.targetVelocity = Mathf.Abs(inputValue) * 2000;
-        _thisHj.motor = motor;
-
-        //EngagePid();
+        float userVelocity = inputValue * 2000;
+        EngagePid(userVelocity);
     }
 
     public void Reset()
@@ -44,14 +50,7 @@ public class WheelScript : MonoBehaviour
         pTerm = iTerm = dTerm = 0;
     }
 
-
-    float pTerm, iTerm, dTerm;
-    float KP = 300, KI = 15, KD = 200;
-
-    private float pitch;
-    private float last_pitch;
-
-    private void EngagePid()
+    private void EngagePid(float velocity)
     {
         pitch = _stickRb.transform.localRotation.z;
 
@@ -62,10 +61,22 @@ public class WheelScript : MonoBehaviour
         last_pitch = pitch;
 
         JointMotor motor = _thisHj.motor;
-        motor.targetVelocity = pTerm + iTerm + dTerm;
+        motor.targetVelocity = velocity + pTerm + iTerm + dTerm;
         _thisHj.motor = motor;
+    }
 
-        //Debug.Log(_stickRb.transform.localRotation.z);
-        //Debug.Log(Vector3.Angle(Vector3.up, _stickRb.transform.transform.up));
+    public void SetP(float value)
+    {
+        KP = value;
+    }
+
+    public void SetI(float value)
+    {
+        KI = value;
+    }
+
+    public void SetD(float value)
+    {
+        KD = value;
     }
 }
