@@ -18,7 +18,6 @@ public class StickScript : MonoBehaviour
     public void Reset()
     {
         _rb.velocity = Vector3.zero;
-        _rb.angularVelocity = Vector3.zero;
         transform.position = _startPosition;
         transform.rotation = _startRotation;
     }

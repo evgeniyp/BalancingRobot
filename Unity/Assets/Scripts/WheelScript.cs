@@ -28,10 +28,10 @@ public class WheelScript : MonoBehaviour
 
         _thisHj.axis = inputValue < 0 ? AXIS_Y_ : AXIS_Y;
         JointMotor motor = _thisHj.motor;
-        motor.targetVelocity = Mathf.Abs(inputValue) * 200;
+        motor.targetVelocity = Mathf.Abs(inputValue) * 2000;
         _thisHj.motor = motor;
 
-        EngagePid();
+        //EngagePid();
     }
 
     public void Reset()
